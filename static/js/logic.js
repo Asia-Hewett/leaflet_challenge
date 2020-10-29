@@ -15,3 +15,13 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
   id: "mapbox/streets-v11",
   accessToken: API_KEY
 }).addTo(myMap);
+
+let link = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+
+// Grab the geojson using d3
+
+d3.json(link, function(data) {
+  // Create a geojson layer with the retrieved data
+  L.geoJson(data).addTo(myMap);
+});
+
