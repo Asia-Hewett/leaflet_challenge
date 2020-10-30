@@ -32,7 +32,7 @@ function markerColor(mag) {
 
 function createFeatures(earthquakeData) {
 
-  var earthquakes=L.geoJson(earthquakeData, {
+  let earthquakes=L.geoJson(earthquakeData, {
       pointToLayer: function(data, latlng) {
         return L.circleMarker(latlng, {
           radius: data.properties.mag,
@@ -53,16 +53,16 @@ function createFeatures(earthquakeData) {
   function createMap(earthquakes) {
   
     // Define streetmap and darkmap layers
-    var grayscale = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/dark-v9/tiles/256/{z}/{x}/{y}?" +
+    let grayscale = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/dark-v9/tiles/256/{z}/{x}/{y}?" +
       "access_token=pk.eyJ1IjoibWV0YWxpY2FydXMiLCJhIjoiY2thN2V1bDBxMDJ5bTJ4bGo1a29temsxNCJ9.5DGFqjLK2yLYd9Uab-EyrQ");
   
-    var satellite = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v10/tiles/256/{z}/{x}/{y}?" +
+    let satellite = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v10/tiles/256/{z}/{x}/{y}?" +
     "access_token=pk.eyJ1IjoibWV0YWxpY2FydXMiLCJhIjoiY2thN2V1bDBxMDJ5bTJ4bGo1a29temsxNCJ9.5DGFqjLK2yLYd9Uab-EyrQ");
   
-    var outdoors = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/outdoors-v10/tiles/256/{z}/{x}/{y}?" +
+    let outdoors = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/outdoors-v10/tiles/256/{z}/{x}/{y}?" +
     "access_token=pk.eyJ1IjoibWV0YWxpY2FydXMiLCJhIjoiY2thN2V1bDBxMDJ5bTJ4bGo1a29temsxNCJ9.5DGFqjLK2yLYd9Uab-EyrQ");
     
-    var tectOutline=new L.LayerGroup();
+    let tectOutline=new L.LayerGroup();
 
     d3.json(tectLink,function(data){
         L.geoJson(data,{
@@ -72,6 +72,20 @@ function createFeatures(earthquakeData) {
         }).addTo(tectOutline);
         
     });
+
+    // This is going to hold our map layers
+
+    let baseMaps = {
+      "Satellite": satellite,
+      "Grayscale": grayscale,
+      "Outdoor":outdoors
+    };
+
+    // These maps will go on top of our base layer and show the earthquake markers and techtonic outline layer
+    var overlayMaps = {
+      "Earthquakes": earthquakes,
+      "Tectonic Line":tectOutline
+    };
 
   // Add title layer
 
