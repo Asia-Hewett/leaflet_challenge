@@ -15,8 +15,8 @@ let variable = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/
 });
 
 let myMap = L.map("mapid", {
-  center: [40, -94], //not sure what it wants here
-  zoom: 3
+  center: [40, -94], 
+  zoom: 4 
 })
 variable.addTo(myMap);
 
