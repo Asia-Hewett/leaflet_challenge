@@ -95,10 +95,10 @@ function createMap(earthquakes) {
 
   legend.onAdd = function () {
       let div = L.DomUtil.create('div', 'info legend'),
-          magnitudes = [0, 1, 2, 3, 4, 5];
+          magnitudes = [];
   
       for (let i = 0; i < magnitudes.length; i++) {
-          div.innerHTML += '<li style="background:' + markerColor(magnitudes[i] + 1) + '"></li> ' + 
+          div.innerHTML += '<i style="background:' + markerColor(magnitudes[i] + 1) + '"></i> ' + 
       + magnitudes[i] + (magnitudes[i + 1] ? ' - ' + magnitudes[i + 1] + '<br>' : ' + ');
       }
   
@@ -109,22 +109,22 @@ function createMap(earthquakes) {
 
   // Creating colorful legend Layer
   let colorfulLegend = L.control({position: 'bottomright'});
-
+  // Generating colors and setting magnitude grades
   colorfulLegend.onAdd = function() {
-    var div = L.DomUtil.create("div", "info legend");
-    var grades = [1, 2, 3, 4, 5, 6];
-    var colors = [
+    let div = L.DomUtil.create("div", "info legend");
+    let grades = [1, 2, 3, 4, 5, 6];
+    let colors = [
       "#b7f34d",
       "#e1f34d",
       "#f3db4d",
       "#f3ba4d",
       "#f0a76b",
       "#f06b6b"
-     ];
-
+     ]; 
+    // Looping through "i" in grades to set grades "1-2", "2-3", etc...
     for (let i = 0; i < grades.length; i++) {
-      div.innerHTML += "<li style='background: " + colors[i] + "'></li> " +
-        grades[i] + (grades[i + 1] ? "&ndash;" + grades[i + 1] + "<br>" : "+");
+      div.innerHTML += "<li style='background: " + colors[i] + "'></li> " + //<li></li> for list items
+        grades[i] + (grades[i + 1] ? "&ndash;" + grades[i + 1] : "+"); // Adding the " - " and " + "
     }
     return div;
   };
