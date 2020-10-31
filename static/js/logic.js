@@ -1,13 +1,11 @@
-// This is where we're getting our data from
+// Our JSON link to the info of the Earthquakes that happened on previous week
 let link = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
-let tectLink="https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json";
 
-// Create a function to generate the markers for earthquake magnitude
-
+// Creating markers and adjusting their size and color using magnitude of earthquake data
 function markerSize(mag) {
-  return mag * 30000;
+  return mag * 25000;
 }
-
+// I pulled the marker colors using the console dropper tool and hex numbers 
 function markerColor(mag) {
   if (mag <= 1) {
       return "#ADFF2F";
@@ -24,83 +22,89 @@ function markerColor(mag) {
   };
 }
 
-// Grab the geojson using d3
+// Reading in JSON data to create the basemap and basemap features
+d3.json(link, function(data) {
+  createFeatures(data.features);
+});
 
-  d3.json(link,function(data){
-    createFeatures(data.features);
-  });
-
-function createFeatures(earthquakeData) {
-
-  let earthquakes=L.geoJson(earthquakeData, {
-      pointToLayer: function(data, latlng) {
-        return L.circleMarker(latlng, {
-          radius: data.properties.mag,
-          color: markerColor(data.properties.mag),
-          opacity: 0.75,
-          fillOpacity: 0.75,
-          weight: 0
-        }).bindPopup("<h3>" + data.properties.place +
-        "</h3><hr><p>" + new Date(data.properties.time) + "</p>" + "<p>" +"Magnitude: "+data.properties.mag + "</p>");
-      }
-    });
-
-    // Adding earthquakes layer to the createMap function
-    createMap(earthquakes);
-    
+function createFeatures(ourData) {
+  // This reads in the earthquake data from our json
+  let earthquakes = L.geoJSON(ourData, {
+ onEachFeature : function (feature, layer) {
+    // Making sure data is generated when earthquake blip is clicked
+    layer.bindPopup("<h3>" + feature.properties.place + "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" + "<p> Mag.: " +  feature.properties.mag + "</p>")
+    },  // This generates the blip per earthquake and the data for each
+        pointToLayer: function (feature, latlng) {
+        return new L.circle(latlng,
+            {radius: markerSize(feature.properties.mag),
+            fillColor: markerColor(feature.properties.mag),
+            fillOpacity: 1,
+            stroke: false,
+    })
   }
-
-  function createMap(earthquakes) {
-  
-    // Define streetmap and darkmap layers
-    let grayscale = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/dark-v9/tiles/256/{z}/{x}/{y}?" +
-      "access_token=pk.eyJ1IjoibWV0YWxpY2FydXMiLCJhIjoiY2thN2V1bDBxMDJ5bTJ4bGo1a29temsxNCJ9.5DGFqjLK2yLYd9Uab-EyrQ");
-  
-    let satellite = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v10/tiles/256/{z}/{x}/{y}?" +
-    "access_token=pk.eyJ1IjoibWV0YWxpY2FydXMiLCJhIjoiY2thN2V1bDBxMDJ5bTJ4bGo1a29temsxNCJ9.5DGFqjLK2yLYd9Uab-EyrQ");
-  
-    let outdoors = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/outdoors-v10/tiles/256/{z}/{x}/{y}?" +
-    "access_token=pk.eyJ1IjoibWV0YWxpY2FydXMiLCJhIjoiY2thN2V1bDBxMDJ5bTJ4bGo1a29temsxNCJ9.5DGFqjLK2yLYd9Uab-EyrQ");
+  });
     
-    let tectOutline=new L.LayerGroup();
+    createMap(earthquakes);
+}
 
-    d3.json(tectLink,function(data){
-        L.geoJson(data,{
-                color:"orange",
-                weight:2
+// Creating the additional map layers and adding some cool backgrounds to the maps
+// Maps were pulled from a Leaflet plugin site (https://leaflet-extras.github.io/leaflet-providers/preview/)
 
-        }).addTo(tectOutline);
-        
-    });
-
-    // This is going to hold our map layers
-
-    let baseMaps = {
-      "Satellite": satellite,
-      "Grayscale": grayscale,
-      "Outdoor":outdoors
-    };
-
-    // These maps will go on top of our base layer and show the earthquake markers and techtonic outline layer
-    var overlayMaps = {
-      "Earthquakes": earthquakes,
-      "Tectonic Line":tectOutline
-    };
-
-  // Add title layer
-
-  let landing = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
-    attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
+function createMap(earthquakes) {
+  let satmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
     tileSize: 512,
     maxZoom: 18,
     zoomOffset: -1,
     id: "mapbox/streets-v11",
     accessToken: API_KEY
   });
+  let darkmap = L.tileLayer("https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png", {
+    maxZoom: 18,
+    id: "dark-v10",
+    accessToken: API_KEY
+  });
+  
+  let baseMaps = {
+    "Satellite Map": satmap,
+    "Dark Map": darkmap
+  };
+  let overlayMaps = {
+    Earthquakes: earthquakes
+  };
 
-  let myMap = L.map("mapid", {
-    center: [40, -94], 
-    zoom: 4 
-  })
-  landing.addTo(myMap);
-  }
+  // Connecting our base map to the HTML page
+  // Making sure the two layers generate
+  let map = L.map("mapid", {
+    center: [30,-100],
+    zoom: 3,
+    layers: [satmap, earthquakes]
+  });
+
+  // Adding Control panel
+  L.control.layers(baseMaps, overlayMaps, {
+    collapsed: false
+  }).addTo(map);
+
+  // Adding legend to top right corner
+  let legend = L.control({position: 'topright'});
+
+  // Making sure the Dom and Maps can be switched between
+  // Generating backgrounds when clicked 
+  // Making sure the legend works when clicked
+  // Making sure earthquake layer can be turned on/off
+
+  legend.onAdd = function () {
+      let div = L.DomUtil.create('div', 'info legend'),
+          magnitudes = [0, 1, 2, 3, 4, 5];
+  
+      for (let i = 0; i < magnitudes.length; i++) {
+          div.innerHTML +=
+              '<i style="background:' + markerColor(magnitudes[i] + 1) + '"></i> ' + 
+      + magnitudes[i] + (magnitudes[i + 1] ? ' - ' + magnitudes[i + 1] + '<br>' : ' + ');
+      }
+  
+      return div;
+  };
+  
+  legend.addTo(map);
+}
